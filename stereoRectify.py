@@ -1,6 +1,9 @@
 import cv2 as cv
 import numpy as np
 
+# using the stereo parameters to calibrate video stream
+# input video is a video with two camera images grouped in a row
+
 stereoParams = np.load('stereoParams.npz')
 M1 = stereoParams['M1']
 M2 = stereoParams['M2']
@@ -12,8 +15,7 @@ P1 = stereoParams['P1']
 P2 = stereoParams['P2']
 ROI1 = stereoParams['ROI1']
 ROI2 = stereoParams['ROI2']
-imagesize = (1280, 1024)
-#imagesize = (1920, 1080)
+imagesize = (640, 360)
 
 leftmaps = cv.initUndistortRectifyMap(M1, D1, R1, P1, imagesize, cv.CV_16SC2)
 rightmaps = cv.initUndistortRectifyMap(M2, D2, R2, P2, imagesize, cv.CV_16SC2)
@@ -23,7 +25,7 @@ y2 = min(ROI1[0] + ROI1[2], ROI2[0] + ROI2[2])
 x2 = min(ROI1[1] + ROI1[3], ROI2[1] + ROI2[3])
 newsize = (y2-y1, x2-x1)
 
-videopath = "/home/zhenyu/PycharmProjects/stereo/CalibVideo1.avi"
+videopath = "/your/video/path"
 video = cv.VideoCapture(videopath)
 outfile = 'rectifiedVideo.avi'
 writer = cv.VideoWriter(outfile, cv.VideoWriter_fourcc(*'DIVX'), 10, (newsize[0]*2, newsize[1]))
@@ -37,7 +39,6 @@ while rval:
     img_r_remap = cv.remap(right, rightmaps[0], rightmaps[1], cv.INTER_LINEAR)
     imgl = img_l_remap[x1:x2, y1:y2, :]
     imgr = img_r_remap[x1:x2, y1:y2, :]
-    print imgl.shape
     #imgl = cv.resize(imgl, imagesize, 0, 0, cv.INTER_LINEAR)
     #imgr = cv.resize(imgr, imagesize, 0, 0, cv.INTER_LINEAR)
     res = np.concatenate((imgl, imgr), 1)
